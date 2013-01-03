@@ -15,7 +15,7 @@ $header
 			<tr>
 				<td class="field_display_border_left">{$lng['emails']['emailaddress']}&nbsp;&nbsp;{$arrowcode['m.email_full']}</td>
 				<td class="field_display">{$lng['emails']['forwarders']}&nbsp;&nbsp;{$arrowcode['m.destination']}</td>
-				<td class="field_display">{$lng['emails']['account']}</td>
+				<td class="field_display">{$lng['emails']['accounts']}</td>
 				<td class="field_display">{$lng['emails']['catchall']}</td>
 				<if $settings['system']['mail_quota_enabled'] == '1'><td class="field_display">{$lng['emails']['quota']}</td></if>
 				<td class="field_display_search" colspan="2">{$sortcode}</td>

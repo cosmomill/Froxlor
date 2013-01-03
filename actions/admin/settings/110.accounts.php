@@ -105,6 +105,14 @@ return array(
 					'default' => '',
 					'save_method' => 'storeSettingField',
 					),
+				'customer_emailprefix' => array(
+					'label' => $lng['serversettings']['emailprefix'],
+					'settinggroup' => 'customer',
+					'varname' => 'emailprefix',
+					'type' => 'string',
+					'default' => '',
+					'save_method' => 'storeSettingField',
+					),
 				'customer_ftpatdomain' => array(
 					'label' => $lng['serversettings']['ftpdomain'],
 					'settinggroup' => 'customer',

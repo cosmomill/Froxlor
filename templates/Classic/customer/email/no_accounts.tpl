@@ -1,0 +1,1 @@
+<tr><td class="field_name" colspan="{$colspan}" align="center"><b>{$lng['emails']['no_accounts']}</b></td></tr>

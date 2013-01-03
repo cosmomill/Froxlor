@@ -49,6 +49,11 @@ return array (
 			'label' => $lng['menue']['email']['email'],
 			'elements' => array (
 				array (
+					'url' => 'customer_email_users.php?page=accounts',
+					'label' => $lng['menue']['email']['accounts'],
+					'required_resources' => 'emails',
+				),
+				array (
 					'url' => 'customer_email.php?page=emails',
 					'label' => $lng['menue']['email']['emails'],
 					'required_resources' => 'emails',
