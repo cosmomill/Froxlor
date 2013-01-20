@@ -19,7 +19,7 @@ return array(
 	'groups' => array(
 		'fcgid' => array(
 			'title' => $lng['admin']['fcgid_settings'],
-			'websrv_avail' => array('apache2', 'lighttpd'),
+			'websrv_avail' => array('apache2', 'apache24', 'lighttpd'),
 			'fields' => array(
 				'system_mod_fcgid_enabled' => array(
 					'label' => $lng['serversettings']['mod_fcgid'],
@@ -66,10 +66,10 @@ return array(
 					'settinggroup' => 'system',
 					'varname' => 'mod_fcgid_wrapper',
 					'type' => 'option',
-					'option_options' => array(0 => 'ScriptAlias', 1=> 'FCGIWrapper'),
+					'option_options' => array(0 => 'ScriptAlias', 1=> 'FcgidWrapper'),
 					'default' => 1,
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2')
+					'websrv_avail' => array('apache2', 'apache24')
 					),
 				'system_mod_fcgid_starter' => array(
 					'label' => $lng['serversettings']['mod_fcgid']['starter'],
@@ -104,7 +104,7 @@ return array(
 					'type' => 'bool',
 					'default' => false,
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2')
+					'websrv_avail' => array('apache2', 'apache24')
 					),
 				'system_mod_fcgid_httpuser' => array(
 					'label' => $lng['admin']['mod_fcgid_user'],
@@ -113,7 +113,7 @@ return array(
 					'type' => 'string',
 					'default' => 'froxlorlocal',
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2')
+					'websrv_avail' => array('apache2', 'apache24')
 					),
 				'system_mod_fcgid_httpgroup' => array(
 					'label' => $lng['admin']['mod_fcgid_group'],
@@ -122,7 +122,7 @@ return array(
 					'type' => 'string',
 					'default' => 'froxlorlocal',
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2')
+					'websrv_avail' => array('apache2', 'apache24')
 					),
 				'system_mod_fcgid_defaultini_ownvhost' => array(
 					'label' => $lng['serversettings']['mod_fcgid']['defaultini_ownvhost'],
@@ -133,7 +133,7 @@ return array(
 					'option_mode' => 'one',
 					'option_options_method' => 'getPhpConfigs',
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2')
+					'websrv_avail' => array('apache2', 'apache24')
 					),
 				'system_mod_fcgid_idle_timeout' => array(
 					'label' => $lng['serversettings']['mod_fcgid']['idle_timeout'],

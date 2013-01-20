@@ -36,7 +36,7 @@ return array(
 					'type' => 'bool',
 					'default' => false,
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2')
+					'websrv_avail' => array('apache2', 'apache24')
 					),
 				'system_perl_suexeccgipath' => array(
 					'label' => $lng['serversettings']['perl']['suexeccgipath'],
@@ -46,7 +46,7 @@ return array(
 					'string_type' => 'dir',
 					'default' => '/var/www/cgi-bin/',
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2')
+					'websrv_avail' => array('apache2', 'apache24')
 					),
 				'perl_server' => array(
 					'label' => $lng['serversettings']['perl_server'],

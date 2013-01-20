@@ -29,7 +29,7 @@ return array(
 					'type' => 'option',
 					'default' => 'apache2',
 					'option_mode' => 'one',
-					'option_options' => array('apache2' => 'Apache 2', 'lighttpd' => 'ligHTTPd', 'nginx' => 'Nginx'),
+					'option_options' => array('apache2' => 'Apache 2', 'apache24' => 'Apache 2.4', 'lighttpd' => 'ligHTTPd', 'nginx' => 'Nginx'),
 					'save_method' => 'storeSettingField',
 					'overview_option' => true
 					),
@@ -145,7 +145,7 @@ return array(
 					'type' => 'bool',
 					'default' => false,
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2')
+					'websrv_avail' => array('apache2', 'apache24')
 					),
 				'defaultwebsrverrhandler_enabled' => array(
 					'label' => $lng['serversettings']['defaultwebsrverrhandler_enabled'],
@@ -162,7 +162,7 @@ return array(
 					'type' => 'string',
 					'default' => '',
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2', 'nginx')
+					'websrv_avail' => array('apache2', 'apache24', 'nginx')
 					),
 				'defaultwebsrverrhandler_err403' => array(
 					'label' => $lng['serversettings']['defaultwebsrverrhandler_err403'],
@@ -171,7 +171,7 @@ return array(
 					'type' => 'string',
 					'default' => '',
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2', 'nginx')
+					'websrv_avail' => array('apache2', 'apache24', 'nginx')
 					),
 				'defaultwebsrverrhandler_err404' => array(
 					'label' => $lng['serversettings']['defaultwebsrverrhandler_err404'],
@@ -188,7 +188,7 @@ return array(
 					'type' => 'string',
 					'default' => '',
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2', 'nginx')
+					'websrv_avail' => array('apache2', 'apache24', 'nginx')
 					),
 				'customredirect_enabled' => array(
 					'label' => $lng['serversettings']['customredirect_enabled'],
@@ -197,7 +197,7 @@ return array(
 					'type' => 'bool',
 					'default' => false,
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2', 'lighttpd')
+					'websrv_avail' => array('apache2', 'apache24', 'lighttpd')
 					),
 				'customredirect_default' => array(
 					'label' => $lng['serversettings']['customredirect_default'],
@@ -208,7 +208,7 @@ return array(
 					'option_mode' => 'one',
 					'option_options_method' => 'getRedirectCodes',
 					'save_method' => 'storeSettingField',
-					'websrv_avail' => array('apache2', 'lighttpd')
+					'websrv_avail' => array('apache2', 'apache24', 'lighttpd')
 					),
 				),
 			),
