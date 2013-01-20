@@ -27,6 +27,8 @@ require_once(makeCorrectFile(dirname(__FILE__) . '/cron_tasks.inc.http.20.lightt
 require_once(makeCorrectFile(dirname(__FILE__) . '/cron_tasks.inc.http.25.lighttpd_fcgid.php'));
 require_once(makeCorrectFile(dirname(__FILE__) . '/cron_tasks.inc.http.30.nginx.php'));
 require_once(makeCorrectFile(dirname(__FILE__) . '/cron_tasks.inc.http.35.nginx_phpfpm.php'));
+require_once(makeCorrectFile(dirname(__FILE__) . '/cron_tasks.inc.http.40.apache24.php'));
+require_once(makeCorrectFile(dirname(__FILE__) . '/cron_tasks.inc.http.45.apache24_fcgid.php'));
 
 /**
  * LOOK INTO TASKS TABLE TO SEE IF THERE ARE ANY UNDONE JOBS
@@ -169,6 +171,17 @@ while($row = $db->fetch_array($result_tasks))
 				else
 				{
 					$webserver = new nginx($db, $cronlog, $debugHandler, $idna_convert, $settings);
+				}
+			}
+			elseif($settings['system']['webserver'] == "apache24")
+			{
+				if($settings['system']['mod_fcgid'] == 1 || $settings['phpfpm']['enabled'] == 1)
+				{
+					$webserver = new apache24_fcgid($db, $cronlog, $debugHandler, $idna_convert, $settings);
+				}
+				else
+				{
+					$webserver = new apache24($db, $cronlog, $debugHandler, $idna_convert, $settings);
 				}
 			}
 		}
