@@ -1,0 +1,1 @@
+<span class="sorter" field="{$fieldname}" desc="{$baseurl}&amp;sortfield={$fieldname}&amp;sortorder=desc" asc="{$baseurl}&amp;sortfield={$fieldname}&amp;sortorder=asc"><img src="templates/Delacap/assets/img/alpha.gif" /></span>
