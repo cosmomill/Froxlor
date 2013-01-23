@@ -403,23 +403,20 @@ while($row = $db->fetch_array($result_tasks))
 				/*
 				 * remove specific maildir
 				 */
-				$email_full = $row['data']['email'];
+				$mailbox = $row['data']['email'];
 				if (empty($email_full)) {
 					$cronlog->logAction(CRON_ACTION, LOG_ERROR, 'FATAL: Task7 asks to delete a email account but email field is empty!');
 				}
-				$email_user=substr($email_full,0,strrpos($email_full,"@"));
-				$email_domain=substr($email_full,strrpos($email_full,"@")+1);
 				$maildirname=trim($settings['system']['vmail_maildirname']);
 				// Add trailing slash to Maildir if needed
 				$maildirpath=$maildirname;
 				if (!empty($maildirname) and substr($maildirname,-1) != "/") $maildirpath.="/";
-				$maildir = makeCorrectDir($settings['system']['vmail_homedir'] .'/'. $row['data']['loginname'] .'/'. $email_domain .'/'. $email_user);
+				$maildir = makeCorrectDir($settings['system']['vmail_homedir'] .'/'. $row['data']['loginname'] .'/'. $mailbox);
 
-				if($maildir != '/' && !empty($maildir) && !empty($email_full)
+				if($maildir != '/' && !empty($maildir) && !empty($mailbox)
 				&& $maildir != $settings['system']['vmail_homedir']
 				&& substr($maildir, 0, strlen($settings['system']['vmail_homedir'])) == $settings['system']['vmail_homedir']
 				&& is_dir($maildir) 
-				&& is_dir(makeCorrectDir($maildir.'/'.$maildirpath))
 				&& fileowner($maildir) == $settings['system']['vmail_uid']
 				&& filegroup($maildir) == $settings['system']['vmail_gid'])
 				{

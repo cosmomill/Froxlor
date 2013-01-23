@@ -70,7 +70,7 @@ if($page == 'accounts')
 
 	elseif($action == 'delete' && $id != 0)
 	{
-		$result = $db->query_first("SELECT `id`, `username`, `description`, `used_by` FROM `".TABLE_MAIL_USERS."` WHERE `customerid`='".(int)$userinfo['customerid']."' AND `id`='".(int)$id."'");
+		$result = $db->query_first("SELECT `id`, `username`, `description`, `customerid`, `used_by` FROM `".TABLE_MAIL_USERS."` WHERE `customerid`='".(int)$userinfo['customerid']."' AND `id`='".(int)$id."'");
 		if(isset($_POST['send']) && $_POST['send']=='send')
 		{
 			$db->query("DELETE FROM `".TABLE_MAIL_USERS."` WHERE `customerid`='".(int)$userinfo['customerid']."' AND `id`='".(int)$id."'");
@@ -91,6 +91,12 @@ if($page == 'accounts')
 					$db->query("UPDATE `".TABLE_MAIL_VIRTUAL."` SET `destination` = '".$db->escape(makeCorrectDestination($resultu['destination']))."' WHERE `customerid`='".(int)$userinfo['customerid']."' AND `email_full`='$email_full'");
 				}
 			}
+			
+			if(isset($_POST['delete_userfiles']) && (int)$_POST['delete_userfiles'] == 1)
+			{
+				inserttask('7', $userinfo['loginname'], $result['username']);
+			}
+			
 			$db->query("UPDATE `".TABLE_PANEL_CUSTOMERS."` SET `email_accounts_used`=`email_accounts_used`-1 $resetaccnumber WHERE `customerid`='".(int)$userinfo['customerid']."'");
 			redirectTo($filename, Array('page' => $page, 's' => $s));
 		}
@@ -100,7 +106,14 @@ if($page == 'accounts')
 				$used_by = str_replace(' ', '; ', $result['used_by']);
 				$lng['question']['email_reallydelete_account'] = str_replace ('%s', $used_by, $lng['question']['email_reallydelete_account_used']).$lng['question']['email_reallydelete_account'];
 			}
-			ask_yesno('email_reallydelete_account', $filename, array( 'id' => $id, 'page' => $page, 'action' => $action ), $result['username']);
+			
+			if(maildirExists($result))  {
+				$show_checkbox = true;
+			} else {
+				$show_checkbox = false;
+			}
+			
+			ask_yesno_withcheckbox('email_reallydelete_account', 'admin_customer_alsoremovemail', $filename, array( 'id' => $id, 'page' => $page, 'action' => $action ), $result['username'], $show_checkbox);
 		}
 	}
 
