@@ -1,0 +1,2 @@
+<a rel="confirm" class="btn btn-mini" title="{$account_name}" href="{$linker->getLink(array('section' => 'email', 'page' => 'forwarders', 'action' => 'deleteaccount', 'id' => $result['id'], 'forwarderid' => $accountid))}"><i class="icon-trash"></i>{$lng['panel']['delete']}</a>
+ 

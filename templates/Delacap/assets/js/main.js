@@ -35,6 +35,9 @@ $(document).ready(function()
 	// email forwarder
 	$('label[for="mail_fwds"]').parent().next().forwarder();
 	
+	// email accounts
+	$('label[for="mail_accounts"]').parent().next().accounts();
+	
 	// make rel="external" links open in a new window
 	$("a[rel='external']").attr('target', '_blank');
 	

@@ -25,7 +25,7 @@
 					<tr>
 						<th>{$lng['emails']['emailaddress']}{$arrowcode['m.email_full']}</th>
 						<th>{$lng['emails']['forwarders']}{$arrowcode['m.destination']}</th>
-						<th>{$lng['emails']['account']}</th>
+						<th>{$lng['emails']['accounts']}</th>
 						<th>{$lng['emails']['catchall']}</th>
 						<if $settings['system']['mail_quota_enabled'] == '1'>
 						<th>{$lng['emails']['quota']}</th>
