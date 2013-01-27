@@ -48,6 +48,7 @@ if($page == 'accounts')
 		$pagingcode = $paging->getHtmlPagingCode($filename . '?page=' . $page . '&s=' . $s);
 		$searchcode = $paging->getHtmlSearchCode($lng);
 		$accounts='';
+		$i = 0;
 		
 		while($row = $db->fetch_array($result))
 		{	
@@ -70,9 +71,17 @@ if($page == 'accounts')
 
 	elseif($action == 'delete' && $id != 0)
 	{
-		$result = $db->query_first("SELECT `id`, `username`, `description`, `customerid`, `used_by` FROM `".TABLE_MAIL_USERS."` WHERE `customerid`='".(int)$userinfo['customerid']."' AND `id`='".(int)$id."'");
+		$result = $db->query_first("SELECT `id`, `username`, `description`, `customerid`, `quota`, `used_by` FROM `".TABLE_MAIL_USERS."` WHERE `customerid`='".(int)$userinfo['customerid']."' AND `id`='".(int)$id."'");
 		if(isset($_POST['send']) && $_POST['send']=='send')
 		{
+			$update_users_query_addon = '';
+			
+			// Free the Quota used by the email account
+			if($settings['system']['mail_quota_enabled'] == 1)
+			{
+				$update_users_query_addon.= " , `email_quota_used` = `email_quota_used` - " . (int)$result['quota'] . " ";
+			}
+						
 			$db->query("DELETE FROM `".TABLE_MAIL_USERS."` WHERE `customerid`='".(int)$userinfo['customerid']."' AND `id`='".(int)$id."'");
 			if($userinfo['email_accounts_used']=='1')
 			{
@@ -96,8 +105,9 @@ if($page == 'accounts')
 			{
 				inserttask('7', $userinfo['loginname'], $result['username']);
 			}
-			
-			$db->query("UPDATE `".TABLE_PANEL_CUSTOMERS."` SET `email_accounts_used`=`email_accounts_used`-1 $resetaccnumber WHERE `customerid`='".(int)$userinfo['customerid']."'");
+				
+			$db->query("UPDATE `".TABLE_PANEL_CUSTOMERS."` SET `email_accounts_used`=`email_accounts_used`-1 $resetaccnumber $update_users_query_addon WHERE `customerid`='".(int)$userinfo['customerid']."'");
+			$log->logAction(USR_ACTION, LOG_INFO, "deleted accounr '" . $result['username'] . "'");
 			redirectTo($filename, Array('page' => $page, 's' => $s));
 		}
 		else
@@ -166,10 +176,38 @@ if($page == 'accounts')
 					{
 						$password = substr(md5(uniqid(microtime(), 1)), 12, 6);
 					}
-						
+					
+					$cryptPassword = makeCryptPassword($db->escape($password),1);
+					
 					$username = $userinfo['loginname'].$settings['customer']['emailprefix'].(intval($userinfo['email_lastaccountnumber'])+1);
-					$db->query("INSERT INTO `" . TABLE_MAIL_USERS . "` (`customerid`, `email`, `username`, " . ($settings['system']['mailpwcleartext'] == '1' ? '`password`, ' : '') . " `password_enc`, `homedir`, `maildir`, `uid`, `gid`, `postfix`, `quota`, `imap`, `pop3`, `description`) VALUES ('" . (int)$userinfo['customerid'] . "', '" . $db->escape($username) . "', '" . $db->escape($username) . "', " . ($settings['system']['mailpwcleartext'] == '1' ? "'" . $db->escape($password) . "'," : '') . " ENCRYPT('" . $db->escape($password) . "'), '" . $db->escape($settings['system']['vmail_homedir']) . "', '" . $db->escape($userinfo['loginname'] . '/' . $username . '/') . "', '" . (int)$settings['system']['vmail_uid'] . "', '" . (int)$settings['system']['vmail_gid'] . "', 'y', '" . (int)$quota . "', '" . (int)$userinfo['imap'] . "', '" . (int)$userinfo['pop3'] . "', '".$db->escape($description)."')");
-					$db->query("UPDATE `".TABLE_PANEL_CUSTOMERS."` SET `email_accounts_used`=`email_accounts_used`+1, `email_lastaccountnumber`=`email_lastaccountnumber`+1 WHERE `customerid`='".(int)$userinfo['customerid']."'");
+					$maildirname = trim($settings['system']['vmail_maildirname']);
+					// Add trailing slash to Maildir if needed
+					$maildirpath = $maildirname;
+					if (!empty($maildirname)) $maildirpath = makeCorrectDir($maildirname);
+					
+					$db->query("INSERT INTO `" . TABLE_MAIL_USERS .
+						"` (`customerid`, `email`, `username`, " . ($settings['system']['mailpwcleartext'] == '1' ? '`password`, ' : '') . " `password_enc`, `homedir`, `maildir`, `uid`, `gid`, `postfix`, `quota`, `imap`, `pop3`, `description`) ".
+						"VALUES (".
+						"'" . (int)$userinfo['customerid'] . "', ".
+						"'" . $db->escape($username) . "', ".
+						"'" . $db->escape($username) . "', ". 
+						($settings['system']['mailpwcleartext'] == '1' ? "'" . $db->escape($password) . "', " : '') .
+						"'" . $db->escape($cryptPassword) . "', ".
+						"'" . $db->escape($settings['system']['vmail_homedir']) . "', ".
+						"'" . $db->escape($userinfo['loginname'] . '/' . $username . $maildirpath) . "', ".
+						"'" . (int)$settings['system']['vmail_uid'] . "', ".
+						"'" . (int)$settings['system']['vmail_gid'] . "', ".
+						"'y', ".
+						"'" . (int)$quota . "', ".
+						"'" . (int)$userinfo['imap'] . "', ".
+						"'" . (int)$userinfo['pop3'] . "', ".
+						"'" . $db->escape($description) . "')");
+					
+					$db->query("UPDATE `" . TABLE_PANEL_CUSTOMERS . "` SET ".
+						"`email_accounts_used`=`email_accounts_used`+1, ".
+						"`email_lastaccountnumber`=`email_lastaccountnumber`+1, ".
+						"`email_quota_used`=`email_quota_used`+" . (int)$quota . " ".
+						"WHERE `customerid`='".(int)$userinfo['customerid'] . "'");
 					$replace_arr = array(
 						'EMAIL' => $username,
 						'PASSWORD' => $password
@@ -232,12 +270,13 @@ if($page == 'accounts')
 			else 
 			{
 				$username = $userinfo['loginname'].$settings['customer']['emailprefix'].(intval($userinfo['email_lastaccountnumber'])+1);;
+				$quota = $settings['system']['mail_quota'];
 				
 				$account_add_data = include_once dirname(__FILE__).'/lib/formfields/customer/email/formfield.emails_createaccount.php';
 				$account_add_form = htmlform::genHTMLForm($account_add_data);
 
-				$title = $account_add_data['emails_add']['title'];
-				$image = $account_add_data['emails_add']['image'];
+				$title = $account_add_data['emails_createaccount']['title'];
+				$image = $account_add_data['emails_createaccount']['image'];
 
 				eval("echo \"" . getTemplate("email/accounts_add") . "\";");
 			}
@@ -256,16 +295,19 @@ if($page == 'accounts')
 			if(isset($_POST['send']) && $_POST['send'] == 'send')
 			{
 				$password = validate($_POST['account_password'], 'password');
+				
 				if($password == '')
 				{
 					standard_error(array('stringisempty', 'mypassword'));
 					exit;
 				}
-				else
-				{
-					$db->query("UPDATE `".TABLE_MAIL_USERS."` SET `password`='$password', `password_enc`=ENCRYPT('$password') WHERE `customerid`='".(int)$userinfo['customerid']."' AND `id`='".(int)$id."'");
-					redirectTo($filename, Array('page' => $page, 's' => $s));
-				}
+				
+				$password = validatePassword($password);
+				
+				$log->logAction(USR_ACTION, LOG_NOTICE, "changed email password for '" . $result['username'] . "'");
+				$cryptPassword = makeCryptPassword($db->escape($password),1);
+				$db->query("UPDATE `" . TABLE_MAIL_USERS . "` SET " . ($settings['system']['mailpwcleartext'] == '1' ? "`password` = '" . $db->escape($password) . "', " : '') . " `password_enc`='" . $db->escape($cryptPassword) . "' WHERE `customerid`='" . (int)$userinfo['customerid'] . "' AND `id`='" . (int)$id . "'");
+				redirectTo($filename, Array('page' => $page, 's' => $s));
 			}
 			else
 			{
@@ -274,8 +316,8 @@ if($page == 'accounts')
 				$account_edit_data = include_once dirname(__FILE__).'/lib/formfields/customer/email/formfield.emails_editaccount.php';
 				$account_edit_form = htmlform::genHTMLForm($account_edit_data);
 
-				$title = $account_edit_data['emails_add']['title'];
-				$image = $account_edit_data['emails_add']['image'];
+				$title = $account_edit_data['emails_editaccount']['title'];
+				$image = $account_edit_data['emails_editaccount']['image'];
 
 				eval("echo \"" . getTemplate("email/accounts_edit") . "\";");
 			}
@@ -300,10 +342,53 @@ if($page == 'accounts')
 				$account_edit_desc_data = include_once dirname(__FILE__).'/lib/formfields/customer/email/formfield.emails_editdesc.php';
 				$account_edit_desc_form = htmlform::genHTMLForm($account_edit_desc_data);
 
-				$title = $account_edit_desc_data['emails_add']['title'];
-				$image = $account_edit_desc_data['emails_add']['image'];
+				$title = $account_edit_desc_data['emails_editdesc']['title'];
+				$image = $account_edit_desc_data['emails_editdesc']['image'];
 
 				eval("echo \"" . getTemplate("email/accounts_editdesc") . "\";");
+			}
+		}
+	}
+	
+	elseif($action == 'changequota' && $settings['system']['mail_quota_enabled'] == '1' && $id != 0)
+	{
+		$result = $db->query_first("SELECT `id`, `username`, `quota` FROM `".TABLE_MAIL_USERS."` WHERE `customerid`='".(int)$userinfo['customerid']."' AND `id`='".(int)$id."'");
+		if(isset($result['username']) && $result['username'] != '')
+		{
+			if(isset($_POST['send']) && $_POST['send'] == 'send')
+			{
+				$quota = (int)validate($_POST['email_quota'], 'email_quota', '/^\d+$/', 'vmailquotawrong');
+
+				if($userinfo['email_quota'] != '-1'
+				   && ($quota == 0 || ($quota + $userinfo['email_quota_used'] - $result['quota']) > $userinfo['email_quota']))
+				{
+					standard_error('allocatetoomuchquota', $quota);
+				}
+				else
+				{
+					$log->logAction(USR_ACTION, LOG_NOTICE, "updated quota for email address '" . $result['username'] . "' to " . $quota . " MB");
+					$db->query("UPDATE `" . TABLE_MAIL_USERS . "` SET `quota` = '" . (int)$quota . "' WHERE `id` = " . (int)$id . " AND `customerid`='" . (int)$userinfo['customerid'] . "'");
+
+					if($userinfo['email_quota'] != '-1')
+					{
+						$new_used_quota = $userinfo['email_quota_used'] + ($quota - $result['quota']);
+						$db->query("UPDATE `" . TABLE_PANEL_CUSTOMERS . "` SET `email_quota_used` = " . $new_used_quota . " WHERE `customerid` = '" . (int)$userinfo['customerid'] . "'");
+					}
+
+					redirectTo($filename, Array('page' => $page, 's' => $s));
+				}
+			}
+			else
+			{
+				$result = htmlentities_array($result);
+
+				$quota_edit_data = include_once dirname(__FILE__).'/lib/formfields/customer/email/formfield.emails_accountchangequota.php';
+				$quota_edit_form = htmlform::genHTMLForm($quota_edit_data);
+
+				$title = $quota_edit_data['emails_accountchangequota']['title'];
+				$image = $quota_edit_data['emails_accountchangequota']['image'];
+        
+				eval("echo \"" . getTemplate("email/account_changequota") . "\";");
 			}
 		}
 	}
