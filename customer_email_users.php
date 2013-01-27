@@ -107,7 +107,7 @@ if($page == 'accounts')
 			}
 				
 			$db->query("UPDATE `".TABLE_PANEL_CUSTOMERS."` SET `email_accounts_used`=`email_accounts_used`-1 $resetaccnumber $update_users_query_addon WHERE `customerid`='".(int)$userinfo['customerid']."'");
-			$log->logAction(USR_ACTION, LOG_INFO, "deleted accounr '" . $result['username'] . "'");
+			$log->logAction(USR_ACTION, LOG_INFO, "deleted account '" . $result['username'] . "'");
 			redirectTo($filename, Array('page' => $page, 's' => $s));
 		}
 		else
@@ -129,9 +129,9 @@ if($page == 'accounts')
 
 	elseif($action == 'add')
 	{
-		if(isset($_POST['email_quota']))
+		if(isset($_POST['account_quota']))
 		{
-			$quota = validate($_POST['email_quota'], 'email_quota', '/^\d+$/', 'vmailquotawrong');
+			$quota = validate($_POST['account_quota'], 'account_quota', '/^\d+$/', 'vmailquotawrong');
 		}
 		
 		if($userinfo['email_accounts'] == '-1'
