@@ -498,8 +498,7 @@ elseif($page == 'accounts')
 						$email_domain=substr($email_full,strrpos($email_full,"@")+1);
 						$maildirname=trim($settings['system']['vmail_maildirname']);
 						// Add trailing slash to Maildir if needed
-						$maildirpath=$maildirname;
-						if (!empty($maildirname)) $maildirpath = makeCorrectDir($maildirname);
+						$maildirpath = (empty($maildirname) ? $maildirpath = "/" : makeCorrectDir($maildirname));
 
 						$db->query("INSERT INTO `" . TABLE_MAIL_USERS . 
 							"` (`customerid`, `email`, `username`, " . ($settings['system']['mailpwcleartext'] == '1' ? '`password`, ' : '') . " `password_enc`, `homedir`, `maildir`, `uid`, `gid`, `domainid`, `postfix`, `quota`, `imap`, `pop3`) ".

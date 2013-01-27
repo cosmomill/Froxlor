@@ -182,8 +182,7 @@ if($page == 'accounts')
 					$username = $userinfo['loginname'].$settings['customer']['emailprefix'].(intval($userinfo['email_lastaccountnumber'])+1);
 					$maildirname = trim($settings['system']['vmail_maildirname']);
 					// Add trailing slash to Maildir if needed
-					$maildirpath = $maildirname;
-					if (!empty($maildirname)) $maildirpath = makeCorrectDir($maildirname);
+					$maildirpath = (empty($maildirname) ? $maildirpath = "/" : makeCorrectDir($maildirname));
 					
 					$db->query("INSERT INTO `" . TABLE_MAIL_USERS .
 						"` (`customerid`, `email`, `username`, " . ($settings['system']['mailpwcleartext'] == '1' ? '`password`, ' : '') . " `password_enc`, `homedir`, `maildir`, `uid`, `gid`, `postfix`, `quota`, `imap`, `pop3`, `description`) ".
