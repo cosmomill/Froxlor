@@ -57,7 +57,8 @@ function safe_exec($exec_string, &$return_value = false)
 		'php',
 		'rm',
 		'awstats_buildstaticpages.pl',
-		'ln'
+		'ln',
+		'stat'
 	);
 
 	//

@@ -68,27 +68,41 @@ class phpinterface_fpm
 			$fpm_config = ';PHP-FPM configuration for "'.$this->_domain['domain'].'" created on ' . date("Y.m.d H:i:s") . "\n";
 			$fpm_config.= '['.$this->_domain['domain'].']'."\n";
 			$fpm_config.= 'listen = '.$this->getSocketFile()."\n";
-			if($this->_domain['loginname'] == 'froxlor.panel')
+			
+			// try to find out if libnss-mysql is installed
+			// PHP's stat does not work with libnss-mysql
+			$dir_owner = safe_exec('stat -c %U ' . makeCorrectDir($this->_domain['documentroot']));
+			
+			if($dir_owner[0] == 'UNKNOWN')
 			{
-				$fpm_config.= 'listen.owner = '.$this->_domain['guid']."\n";
-				$fpm_config.= 'listen.group = '.$this->_domain['guid']."\n";
-			}
-			else
-			{
-				$fpm_config.= 'listen.owner = '.$this->_domain['loginname']."\n";
-				$fpm_config.= 'listen.group = '.$this->_domain['loginname']."\n";
-			}
-			$fpm_config.= 'listen.mode = 0666'."\n";
-
-			if($this->_domain['loginname'] == 'froxlor.panel')
-			{
+				$fpm_config.= 'listen.mode = 0666'."\n";
 				$fpm_config.= 'user = '.$this->_domain['guid']."\n";
 				$fpm_config.= 'group = '.$this->_domain['guid']."\n";
 			}
 			else
 			{
-				$fpm_config.= 'user = '.$this->_domain['loginname']."\n";
-				$fpm_config.= 'group = '.$this->_domain['loginname']."\n";
+				if($this->_domain['loginname'] == 'froxlor.panel')
+				{
+					$fpm_config.= 'listen.owner = '.$this->_domain['guid']."\n";
+					$fpm_config.= 'listen.group = '.$this->_domain['guid']."\n";
+				}
+				else
+				{
+					$fpm_config.= 'listen.owner = '.$this->_domain['loginname']."\n";
+					$fpm_config.= 'listen.group = '.$this->_domain['loginname']."\n";
+				}
+				$fpm_config.= 'listen.mode = 0666'."\n";
+	
+				if($this->_domain['loginname'] == 'froxlor.panel')
+				{
+					$fpm_config.= 'user = '.$this->_domain['guid']."\n";
+					$fpm_config.= 'group = '.$this->_domain['guid']."\n";
+				}
+				else
+				{
+					$fpm_config.= 'user = '.$this->_domain['loginname']."\n";
+					$fpm_config.= 'group = '.$this->_domain['loginname']."\n";
+				}
 			}
 
 			$fpm_config.= 'pm = '.$fpm_pm."\n";
@@ -168,7 +182,96 @@ class phpinterface_fpm
 
 	public function createIniFile($phpconfig)
 	{
-		return;
+		if(PHP_VERSION_ID < 50300)
+		{
+			return;
+		}
+		
+		$openbasedir = '';
+		$openbasedirc = ';';
+
+		if($this->_domain['openbasedir'] == '1')
+		{
+			$openbasedirc = '';
+			$_phpappendopenbasedir = '';
+
+			$_custom_openbasedir = explode(':', $this->_settings['system']['mod_fcgid_peardir']);
+			foreach($_custom_openbasedir as $cobd)
+			{
+				$_phpappendopenbasedir .= appendOpenBasedirPath($cobd);
+			}
+
+			$_custom_openbasedir = explode(':', $this->_settings['system']['phpappendopenbasedir']);
+			foreach($_custom_openbasedir as $cobd)
+			{
+				$_phpappendopenbasedir .= appendOpenBasedirPath($cobd);
+			}
+
+			if($this->_domain['openbasedir_path'] == '0' && strstr($this->_domain['documentroot'], ":") === false)
+			{
+				$openbasedir = appendOpenBasedirPath($this->_domain['documentroot'], true);
+			}
+			else
+			{
+				$openbasedir = appendOpenBasedirPath($this->_domain['customerroot'], true);
+			}
+
+			$openbasedir .= appendOpenBasedirPath($this->getTempDir());
+			$openbasedir .= $_phpappendopenbasedir;
+
+			$openbasedir = explode(':', $openbasedir);
+			$clean_openbasedir = array();
+			foreach($openbasedir as $number => $path)
+			{
+				if(trim($path) != '/')
+				{
+					$clean_openbasedir[] = makeCorrectDir($path);
+				}
+			}
+			$openbasedir = implode(':', $clean_openbasedir);
+		}
+		else
+		{
+			$openbasedir = 'none';
+			$openbasedirc = ';';
+		}
+
+		$admin = $this->_getAdminData($this->_domain['adminid']);
+		$php_ini_variables = array(
+			'SAFE_MODE' => ($this->_domain['safemode'] == '0' ? 'Off' : 'On'),
+			'PEAR_DIR' => $this->_settings['system']['mod_fcgid_peardir'],
+			'OPEN_BASEDIR' => $openbasedir,
+			'OPEN_BASEDIR_C' => $openbasedirc,
+			'OPEN_BASEDIR_GLOBAL' => $this->_settings['system']['phpappendopenbasedir'],
+			'TMP_DIR' => $this->getTempDir(),
+			'CUSTOMER_EMAIL' => $this->_domain['email'],
+			'ADMIN_EMAIL' => $admin['email'],
+			'DOMAIN' => $this->_domain['domain'],
+			'CUSTOMER' => $this->_domain['loginname'],
+			'ADMIN' => $admin['loginname']
+		);
+
+		//insert a small header for the file
+
+		$phpini_file = ";\n";
+		$phpini_file.= "; php.ini created/changed on " . date("Y.m.d H:i:s") . " for domain '" . $this->_domain['domain'] . "' with id #" . $this->_domain['id'] . " from php template '" . $phpconfig['description'] . "' with id #" . $phpconfig['id'] . "\n";
+		$phpini_file.= "; Do not change anything in this file, it will be overwritten by the Froxlor Cronjob!\n";
+		$phpini_file.= ";\n\n";
+		$phpini_file.= "[PATH=" . makeCorrectDir($this->_domain['documentroot']) . "]\n\n";
+		$phpini_file.= replace_variables($phpconfig['phpsettings'], $php_ini_variables);
+		$phpini_file.= "\n[PHP]\n";
+		
+		// remove deprecated INI directives
+		$deprecated = array('safe_mode = On', 'safe_mode = Off');
+		$phpini_file = str_replace($deprecated, '', $phpini_file);
+		
+		$phpini_file = str_replace('"none"', 'none', $phpini_file);
+		$phpini_file = preg_replace('/\"+/', '"', $phpini_file);
+		$phpini_file_handler = fopen($this->getIniFile(), 'w');
+		fwrite($phpini_file_handler, $phpini_file);
+		fclose($phpini_file_handler);
+		safe_exec('chown root:0 ' . escapeshellarg($this->getIniFile()));
+		safe_exec('chmod 0644 ' . escapeshellarg($this->getIniFile()));
 	}
 
 	/**
@@ -233,7 +336,7 @@ class phpinterface_fpm
 		return $tmpdir;
 	}
 
-  /**
+	/**
  	 * fastcgi-fakedirectory directory
  	 *
  	 * @param boolean $createifnotexists create the directory if it does not exist
@@ -256,4 +359,40 @@ class phpinterface_fpm
 
  		return $configdir;
  	}
+	
+	/**
+	 * return path of php.ini file
+	 * 
+	 * @return string full with path file-name
+	 */
+	public function getIniFile()
+	{
+		$php_info = getPhpInfo();
+		$php_ini_scanned_dir = $php_info['Scan this dir for additional .ini files'];
+		$phpini_filename = makeCorrectFile($php_ini_scanned_dir.'/'.$this->_domain['loginname'].'-'.$this->_domain['domain'].'-froxlor-php.ini');
+
+		return $phpini_filename;
+	}
+	
+	/**
+	 * return the admin-data of a specific admin
+	 * 
+	 * @param int $adminid id of the admin-user
+	 * 
+	 * @return array
+	 */
+	private function _getAdminData($adminid)
+	{
+		$adminid = intval($adminid);
+
+		if(!isset($this->_admin_cache[$adminid]))
+		{
+			$this->_admin_cache[$adminid] = $this->_db->query_first(
+				"SELECT `email`, `loginname` FROM `" . TABLE_PANEL_ADMINS . "` 
+				WHERE `adminid` = " . (int)$adminid
+			);
+		}
+
+		return $this->_admin_cache[$adminid];
+	}
 }

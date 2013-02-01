@@ -54,20 +54,17 @@ return array(
 					'default' => 'froxlorlocal',
 					'save_method' => 'storeSettingField'
 					),
-				/*
-				 * @TODO implement if phpfpm knows custom php.ini files
-				 *
 				'system_phpfpm_defaultini_ownvhost' => array(
 					'label' => $lng['serversettings']['mod_fcgid']['defaultini_ownvhost'],
-					'settinggroup' => 'phpfpm',
-					'varname' => 'vhost_defaultini',
+					'settinggroup' => 'system',
+					'varname' => 'mod_fcgid_defaultini_ownvhost',
 					'type' => 'option',
 					'default' => '1',
 					'option_mode' => 'one',
 					'option_options_method' => 'getPhpConfigs',
 					'save_method' => 'storeSettingField',
+					'websrv_avail' => array('apache2', 'apache24')
 					),
-				*/
 				'system_phpfpm_configdir' => array(
 					'label' => $lng['serversettings']['phpfpm_settings']['configdir'],
 					'settinggroup' => 'phpfpm',
@@ -77,15 +74,15 @@ return array(
 					'default' => '/etc/php-fpm.d/',
 					'save_method' => 'storeSettingField',
 					),
-        'system_phpfpm_aliasconfigdir' => array(
-          'label' => $lng['serversettings']['phpfpm_settings']['aliasconfigdir'],
-          'settinggroup' => 'phpfpm',
-          'varname' => 'aliasconfigdir',
-          'type' => 'string',
-          'string_type' => 'dir',
-          'default' => '/var/www/php-fpm/',
-          'save_method' => 'storeSettingField',
-        ),
+				'system_phpfpm_aliasconfigdir' => array(
+					'label' => $lng['serversettings']['phpfpm_settings']['aliasconfigdir'],
+					'settinggroup' => 'phpfpm',
+					'varname' => 'aliasconfigdir',
+					'type' => 'string',
+					'string_type' => 'dir',
+					'default' => '/var/www/php-fpm/',
+					'save_method' => 'storeSettingField',
+					),
 				'system_phpfpm_tmpdir' => array(
 					'label' => $lng['serversettings']['mod_fcgid']['tmpdir'],
 					'settinggroup' => 'phpfpm',
@@ -102,6 +99,16 @@ return array(
 					'type' => 'string',
 					'string_type' => 'dir',
 					'default' => '/usr/share/php/:/usr/share/php5/',
+					'save_method' => 'storeSettingField',
+					),
+				'system_phpfpm_defaultini' => array(
+					'label' => $lng['serversettings']['mod_fcgid']['defaultini'],
+					'settinggroup' => 'system',
+					'varname' => 'mod_fcgid_defaultini',
+					'type' => 'option',
+					'default' => '1',
+					'option_mode' => 'one',
+					'option_options_method' => 'getPhpConfigs',
 					'save_method' => 'storeSettingField',
 					),
 				'system_phpfpm_reload' => array(

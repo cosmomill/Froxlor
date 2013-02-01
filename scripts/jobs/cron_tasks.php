@@ -137,6 +137,21 @@ while($row = $db->fetch_array($result_tasks))
 				safe_exec('rm -rf '. escapeshellarg(makeCorrectFile($configdir)));
 			}
 		}
+		
+		// clear php INI files prior to re-creation to keep it clean
+		if ($settings['phpfpm']['enabled'] == '1' && PHP_VERSION_ID >= 50300)
+		{
+			$php_info = getPhpInfo();
+			$php_ini_scanned_dir = makeCorrectDir($php_info['Scan this dir for additional .ini files']);
+			
+			if (is_dir($php_ini_scanned_dir))
+			{
+				// now get rid of old stuff
+				//(but append /*-froxlor-php.ini so we only delete files created by Froxlor)
+				$php_ini_scanned_dir.='/*froxlor-php.ini';
+				safe_exec('rm -rf '. makeCorrectFile($php_ini_scanned_dir)); // don't use escapeshellarg it will not work, don't worry the path is hardcoded
+			}
+		}
 
 		if(!isset($webserver))
 		{
