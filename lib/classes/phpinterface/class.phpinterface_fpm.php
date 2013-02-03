@@ -195,7 +195,7 @@ class phpinterface_fpm
 			$openbasedirc = '';
 			$_phpappendopenbasedir = '';
 
-			$_custom_openbasedir = explode(':', $this->_settings['system']['mod_fcgid_peardir']);
+			$_custom_openbasedir = explode(':', $this->_settings['phpfpm']['peardir']);
 			foreach($_custom_openbasedir as $cobd)
 			{
 				$_phpappendopenbasedir .= appendOpenBasedirPath($cobd);
@@ -239,7 +239,7 @@ class phpinterface_fpm
 		$admin = $this->_getAdminData($this->_domain['adminid']);
 		$php_ini_variables = array(
 			'SAFE_MODE' => ($this->_domain['safemode'] == '0' ? 'Off' : 'On'),
-			'PEAR_DIR' => $this->_settings['system']['mod_fcgid_peardir'],
+			'PEAR_DIR' => $this->_settings['phpfpm']['peardir'],
 			'OPEN_BASEDIR' => $openbasedir,
 			'OPEN_BASEDIR_C' => $openbasedirc,
 			'OPEN_BASEDIR_GLOBAL' => $this->_settings['system']['phpappendopenbasedir'],
