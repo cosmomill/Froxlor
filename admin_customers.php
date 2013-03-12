@@ -54,43 +54,12 @@ if($page == 'customers'
 			'c.diskspace' => $lng['customer']['diskspace'],
 			'c.diskspace_used' => $lng['customer']['diskspace'] . ' (' . $lng['panel']['used'] . ')',
 			'c.traffic' => $lng['customer']['traffic'],
-			'c.traffic_used' => $lng['customer']['traffic'] . ' (' . $lng['panel']['used'] . ')',
-			'c.backup_allowed' => $lng['backup_allowed']
-/*
-			'c.mysqls' => $lng['customer']['mysqls'],
-			'c.mysqls_used' => $lng['customer']['mysqls'] . ' (' . $lng['panel']['used'] . ')',
-			'c.ftps' => $lng['customer']['ftps'],
-			'c.ftps_used' => $lng['customer']['ftps'] . ' (' . $lng['panel']['used'] . ')',
-			'c.subdomains' => $lng['customer']['subdomains'],
-			'c.subdomains_used' => $lng['customer']['subdomains'] . ' (' . $lng['panel']['used'] . ')',
-			'c.emails' => $lng['customer']['emails'],
-			'c.emails_used' => $lng['customer']['emails'] . ' (' . $lng['panel']['used'] . ')',
-			'c.email_accounts' => $lng['customer']['accounts'],
-			'c.email_accounts_used' => $lng['customer']['accounts'] . ' (' . $lng['panel']['used'] . ')',
-			'c.email_forwarders' => $lng['customer']['forwarders'],
-			'c.email_forwarders_used' => $lng['customer']['forwarders'] . ' (' . $lng['panel']['used'] . ')',
-			'c.email_quota' => $lng['customer']['email_quota'],
-			'c.email_quota_used' => $lng['customer']['email_quota'] . ' (' . $lng['panel']['used'] . ')',
-			'c.deactivated' => $lng['admin']['deactivated'],
-			'c.lastlogin_succ' => $lng['admin']['lastlogin_succ'],
-			'c.phpenabled' => $lng['admin']['phpenabled'],
-			'c.perlenabled' => $lng['admin']['perlenabled']
-*/
+			'c.traffic_used' => $lng['customer']['traffic'] . ' (' . $lng['panel']['used'] . ')'
 		);
 
-/*
-		if($settings['ticket']['enabled'] == 1)
-		{
-			$fields['c.tickets'] = $lng['customer']['tickets'];
-			$fields['c.tickets_used'] = $lng['customer']['tickets'] . ' (' . $lng['panel']['used'] . ')';
+		if ($settings['system']['backup_enabled'] == '1') {
+			$field['c.backup_allowed'] = $lng['backup_allowed'];
 		}
-
-		if($settings['autoresponder']['autoresponder_active'] == 1)
-		{
-			$fields['c.email_autoresponder'] = $lng['customer']['autoresponder'];
-			$fields['c.email_autoresponder_used'] = $lng['customer']['autoresponder'] . ' (' . $lng['panel']['used'] . ')';
-		}
-*/
 
 		$paging = new paging($userinfo, $db, TABLE_PANEL_CUSTOMERS, $fields, $settings['panel']['paging'], $settings['panel']['natsorting']);
 		$customers = '';
@@ -224,12 +193,17 @@ if($page == 'customers'
 						$last_dbserver = $row_database['dbserver'];
 					}
 
-					foreach(array_unique(explode(',', $settings['system']['mysql_access_host'])) as $mysql_access_host)
+					if(mysql_get_server_info() < '5.0.2') {
+						// failsafe if user has been deleted manually (requires MySQL 4.1.2+)
+						$db_root->query('REVOKE ALL PRIVILEGES, GRANT OPTION FROM \'' . $db_root->escape($row_database['databasename']) .'\'',false,true);
+					}
+
+					$host_res = $db_root->query("SELECT `Host` FROM `mysql`.`user` WHERE `User`='" . $db_root->escape($row_database['databasename']) . "'");
+					while($host = $db_root->fetch_array($host_res))
 					{
-						$mysql_access_host = trim($mysql_access_host);
-						$db_root->query('REVOKE ALL PRIVILEGES ON * . * FROM `' . $db_root->escape($row_database['databasename']) . '`@`' . $db_root->escape($mysql_access_host) . '`',false,true);
-						$db_root->query('REVOKE ALL PRIVILEGES ON `' . str_replace('_', '\_', $db_root->escape($row_database['databasename'])) . '` . * FROM `' . $db_root->escape($row_database['databasename']) . '`@`' . $db_root->escape($mysql_access_host) . '`',false,true);
-						$db_root->query('DELETE FROM `mysql`.`user` WHERE `User` = "' . $db_root->escape($row_database['databasename']) . '" AND `Host` = "' . $db_root->escape($mysql_access_host) . '"');
+						// as of MySQL 5.0.2 this also revokes privileges. (requires MySQL 4.1.2+)
+						$db_root->query('DROP USER \'' . $db_root->escape($row_database['databasename']). '\'@\'' . $db_root->escape($host['Host']) . '\'', false, true);
+						
 					}
 
 					$db_root->query('DROP DATABASE IF EXISTS `' . $db_root->escape($row_database['databasename']) . '`');
@@ -305,7 +279,7 @@ if($page == 'customers'
 
 				if($result['email_autoresponder'] != '-1')
 				{
-					$admin_update_query.= ", `email_autoresponder` = `email_autoresponder` - 0" . (int)$result['email_autoresponder'];
+					$admin_update_query.= ", `email_autoresponder_used` = `email_autoresponder_used` - 0" . (int)$result['email_autoresponder'];
 				}
 
 				if($result['subdomains'] != '-1')
@@ -325,7 +299,7 @@ if($page == 'customers'
 
 				if($result['aps_packages'] != '-1')
 				{
-					$admin_update_query.= ", `aps_packages` = `aps_packages` - 0" . (int)$result['aps_packages'];
+					$admin_update_query.= ", `aps_packages_used` = `aps_packages_used` - 0" . (int)$result['aps_packages'];
 				}
 
 				if(($result['diskspace'] / 1024) != '-1')
@@ -1267,8 +1241,8 @@ if($page == 'customers'
 								/* Prevent access, if deactivated */
 								if($deactivated)
 								{
-									$db_root->query('REVOKE ALL PRIVILEGES ON * . * FROM `' . $db_root->escape($row_database['databasename']) . '`@`' . $db_root->escape($mysql_access_host) . '`');
-									$db_root->query('REVOKE ALL PRIVILEGES ON `' . str_replace('_', '\_', $db_root->escape($row_database['databasename'])) . '` . * FROM `' . $db_root->escape($row_database['databasename']) . '`@`' . $db_root->escape($mysql_access_host) . '`');
+									// failsafe if user has been deleted manually (requires MySQL 4.1.2+)
+									$db_root->query('REVOKE ALL PRIVILEGES, GRANT OPTION FROM \'' . $db_root->escape($row_database['databasename']) .'\'',false,true);
 								}
 								else /* Otherwise grant access */
 								{

@@ -513,7 +513,7 @@ $lng['admin']['subcanemaildomain']['never'] = 'Nie';
 $lng['admin']['subcanemaildomain']['choosableno'] = 'Wählbar, Standardwert: Nein';
 $lng['admin']['subcanemaildomain']['choosableyes'] = 'Wählbar, Standardwert: Ja';
 $lng['admin']['subcanemaildomain']['always'] = 'Immer';
-$lng['changepassword']['also_change_webalizer'] = ' Auch Passwort vom Webalizer ändern';
+$lng['changepassword']['also_change_webalizer'] = ' Auch Passwort der Statistikseite ändern';
 
 // ADDED IN 1.2.16-svn8
 
@@ -797,7 +797,6 @@ $lng['message']['success'] = 'Nachricht erfolgreich an %s Empfänger gesendet';
 $lng['message']['noreceipients'] = 'Es wurde keine E-Mail versendet da sich keine Empfänger in der Datenbank befinden';
 $lng['admin']['sslsettings'] = 'SSL Einstellungen';
 $lng['cronjobs']['notyetrun'] = 'Bisher nicht gestartet';
-$lng['install']['servername_should_be_fqdn'] = 'Der Servername sollte eine FQDN sein und keine IP Adresse';
 $lng['serversettings']['default_vhostconf']['title'] = 'Standard Vhost-Einstellungen';
 $lng['serversettings']['default_vhostconf']['description'] = 'Der Inhalt dieses Feldes wird direkt in jeden Domain-vHost-Container übernommen. Achtung: Der Code wird nicht auf Fehler geprüft. Etwaige Fehler werden also auch übernommen. Der Webserver könnte nicht mehr starten!';
 $lng['error']['invalidip'] = 'Ungültige IP Adresse: %s';
@@ -1499,9 +1498,9 @@ $lng['question']['customer_reallyunlock'] = 'Wollen Sie den Kunden %s wirklich e
 $lng['serversettings']['perl_server']['title'] = 'Perl Server Ort';
 $lng['serversettings']['perl_server']['description'] = 'Der Standardwert ist diesem Guide entnommen: <a target="blank" href="http://wiki.nginx.org/SimpleCGI">http://wiki.nginx.org/SimpleCGI</a>';
 $lng['serversettings']['nginx_php_backend']['title'] = 'Nginx PHP Backend';
-$lng['serversettings']['nginx_php_backend']['description'] = 'Dies ist das Backend, auf dem PHP auf Anfragen von Nginx hört. Kann ein UNIX Socket oder eine IP:Port Kombination sein';
+$lng['serversettings']['nginx_php_backend']['description'] = 'Dies ist das Backend, auf dem PHP auf Anfragen von Nginx hört. Kann ein UNIX Socket oder eine IP:Port Kombination sein<br />*NICHT relevant bei php-fpm';
 $lng['serversettings']['phpreload_command']['title'] = 'PHP Reload Befehl';
-$lng['serversettings']['phpreload_command']['description'] = 'Dieser wird benötigt, um das PHP Backend bei Bedarf durch den Cronjob neu zu laden. (Standard: leer)';
+$lng['serversettings']['phpreload_command']['description'] = 'Dieser wird benötigt, um das PHP Backend bei Bedarf durch den Cronjob neu zu laden. (Standard: leer)<br />*NICHT relevant bei php-fpm';
 
 // ADDED IN FROXLOR 0.9.16
 $lng['error']['intvaluetoolow'] = 'Die angegebene Zahl ist zu klein (Feld %s)';
@@ -1512,13 +1511,13 @@ $lng['serversettings']['phpfpm_settings']['configdir'] = 'Pfad zu php-fpm Konfig
 $lng['serversettings']['phpfpm_settings']['reload'] = 'Kommando zum Neustarten von php-fpm';
 $lng['serversettings']['phpfpm_settings']['pm'] = 'Prozess Manager Control (PM)';
 $lng['serversettings']['phpfpm_settings']['max_children']['title'] = 'Anzahl der Kind-Prozesse';
-$lng['serversettings']['phpfpm_settings']['max_children']['description'] = 'Die Anzahl der zu startenden Kind-Prozesse wenn PM auf \'static\' steht und die maximale Anzahl der Prozesse wenn PM auf \'dynamic\' steht.<br />Equivalent zu PHP_FCGI_CHILDREN';
+$lng['serversettings']['phpfpm_settings']['max_children']['description'] = 'Die Anzahl der zu startenden Kind-Prozesse wenn PM auf \'static\' steht und die maximale Anzahl der Prozesse wenn PM auf \'dynamic/ondemand\' steht.<br />Equivalent zu PHP_FCGI_CHILDREN';
 $lng['serversettings']['phpfpm_settings']['start_servers']['title'] = 'Anzahl der beim Starten zu erstellenden Kind-Prozesse';
-$lng['serversettings']['phpfpm_settings']['start_servers']['description'] = 'Hinweis: Nur wenn PM auf \'dynamic\' steht';
+$lng['serversettings']['phpfpm_settings']['start_servers']['description'] = 'Hinweis: Nur wenn PM auf \'dynamic/ondemand\' steht';
 $lng['serversettings']['phpfpm_settings']['min_spare_servers']['title'] = 'Mindestanzahl der Idle-Prozesse';
-$lng['serversettings']['phpfpm_settings']['min_spare_servers']['description'] = 'Hinweis: Nur wenn PM auf \'dynamic\' steht<br />Wichtig: Pflichtangabe wenn PM auf \'dynamic\' steht';
+$lng['serversettings']['phpfpm_settings']['min_spare_servers']['description'] = 'Hinweis: Nur wenn PM auf \'dynamic/ondemand\' steht<br />Wichtig: Pflichtangabe wenn PM auf \'dynamic/ondemand\' steht';
 $lng['serversettings']['phpfpm_settings']['max_spare_servers']['title'] = 'Maximale Anzahl der Idle-Prozesse';
-$lng['serversettings']['phpfpm_settings']['max_spare_servers']['description'] = 'Hinweis: Nur wenn PM auf \'dynamic\' steht<br />Wichtig: Pflichtangabe wenn PM auf \'dynamic\' steht';
+$lng['serversettings']['phpfpm_settings']['max_spare_servers']['description'] = 'Hinweis: Nur wenn PM auf \'dynamic/ondemand\' steht<br />Wichtig: Pflichtangabe wenn PM auf \'dynamic/ondemand\' steht';
 $lng['serversettings']['phpfpm_settings']['max_requests']['title'] = 'Requests pro Kindprozess bevor Neuerstellung (respawning)';
 $lng['serversettings']['phpfpm_settings']['max_requests']['description'] = 'Für keine Begrenzung \'0\' angeben. Equivalent zu PHP_FCGI_MAX_REQUESTS.';
 $lng['error']['phpfpmstillenabled'] = 'PHP-FPM ist derzeit aktiviert. Bitte deaktiviere es, um FCGID zu aktivieren';
@@ -1653,3 +1652,12 @@ $lng['error']['featureisdisabled'] = 'Die Funktion %s wurde deaktiviert. Kontakt
 $lng['serversettings']['catchall_enabled']['title']  = 'Catchall verwenden';
 $lng['serversettings']['catchall_enabled']['description']  = 'Möchten Sie Ihren Kunden die Funktion Catchall zur Verfügung stellen?';
 
+// ADDED IN 0.9.28.svn6
+$lng['serversettings']['apache_24'] = 'Anpassungen f&uuml;r Apache 2.4 verwenden';
+$lng['admin']['tickets_see_all'] = 'Kann alle Ticket-Kategorien sehen?';
+$lng['serversettings']['nginx_fastcgiparams']['title'] = 'Pfad zur fastcgi_params Datei';
+$lng['serversettings']['nginx_fastcgiparams']['description'] = 'Geben Sie den Pfad zu nginx\'s fastcgi_params Datei an. Inlkusive Dateiname!';
+$lng['serversettings']['enablewebfonts']['title'] = 'Verwende Google Webfonts im Panel';
+$lng['serversettings']['enablewebfonts']['description'] = 'Wenn aktiviert, wird die angegebene Google-Schriftart eingebunden und verwendet';
+$lng['serversettings']['definewebfont']['title'] = '<a href="http://www.google.com/webfonts" rel="external">Google Webfont</a> festlegen';
+$lng['serversettings']['definewebfont']['description'] = 'Wenn aktiviert, wird diese Schriftart im Panel verwendet.<br />Hinweis: Leerzeichen bitte mit einem "+" ersetzen, z.B. "Open+Sans"';

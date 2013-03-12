@@ -50,7 +50,6 @@ elseif($page == 'backup')
 
     if(isset($_POST['send']) && $_POST['send'] == 'send'){
 	$backup_enabled = ($_POST['backup_enabled'] == '1' ? '1' : '0');
-	$backup_ftp_enabled = ($_POST['backup_ftp_enabled'] == '1' ? '1' : '0');
 	
         $db->query("UPDATE `" . TABLE_PANEL_CUSTOMERS . "` SET `backup_enabled`='" . $backup_enabled . "' WHERE `customerid`='" . (int)$userinfo['customerid'] . "'");
 	redirectTo($filename, Array('page' => $page, 's' => $s));
@@ -363,9 +362,18 @@ elseif($page == 'htaccess')
 				$options_cgi = '0';
 			} 
 
-			$error404path = correctErrorDocument($_POST['error404path']);
-			$error403path = correctErrorDocument($_POST['error403path']);
-			$error500path = correctErrorDocument($_POST['error500path']);
+			$error404path = '';
+			if (isset($_POST['error404path'])) {
+				$error404path = correctErrorDocument($_POST['error404path']);
+			}
+			$error403path = '';
+			if (isset($_POST['error403path'])) {
+				$error403path = correctErrorDocument($_POST['error403path']);
+			}
+			$error500path = '';
+			if (isset($_POST['error500path'])) {
+				$error500path = correctErrorDocument($_POST['error500path']);
+			}
 
 			if($path_dupe_check['path'] == $path)
 			{

@@ -33,6 +33,15 @@ return array(
 					'save_method' => 'storeSettingField',
 					'overview_option' => true
 					),
+				'system_apache_24' => array(
+					'label' => $lng['serversettings']['apache_24'],
+					'settinggroup' => 'system',
+					'varname' => 'apache24',
+					'type' => 'bool',
+					'default' => false,
+					'save_method' => 'storeSettingField',
+					'websrv_avail' => array('apache2')
+					),
 				'system_httpuser' => array(
 					'label' => $lng['admin']['webserver_user'],
 					'settinggroup' => 'system',
@@ -124,7 +133,7 @@ return array(
 					'label' => $lng['serversettings']['phpreload_command'],
 					'settinggroup' => 'system',
 					'varname' => 'phpreload_command',
-					'type' => (getSetting('phpfpm', 'enabled') == '1') ? 'hidden' : 'string',
+					'type' => 'string',
 					'default' => '',
 					'save_method' => 'storeSettingField',
 					'websrv_avail' => array('nginx')
@@ -133,8 +142,17 @@ return array(
 					'label' => $lng['serversettings']['nginx_php_backend'],
 					'settinggroup' => 'system',
 					'varname' => 'nginx_php_backend',
-					'type' => (getSetting('phpfpm', 'enabled') == '1') ? 'hidden' : 'string',
+					'type' => 'string',
 					'default' => '127.0.0.1:8888',
+					'save_method' => 'storeSettingField',
+					'websrv_avail' => array('nginx')
+					),
+				'nginx_fastcgiparams' => array(
+					'label' => $lng['serversettings']['nginx_fastcgiparams'],
+					'settinggroup' => 'nginx',
+					'varname' => 'fastcgiparams',
+					'type' => 'string',
+					'default' => '/etc/nginx/fastcgi_params',
 					'save_method' => 'storeSettingField',
 					'websrv_avail' => array('nginx')
 					),

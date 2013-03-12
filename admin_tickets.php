@@ -32,17 +32,20 @@ if(isset($_POST['id']))
 elseif(isset($_GET['id']))
 {
 	$id = intval($_GET['id']);
-	
-	if (!$userinfo['customers_see_all']) {
-		/*
-		 * Check if the current user is allowed to see the current ticket.
-		 */
-		$sql = "SELECT `id` FROM `panel_tickets` WHERE `id` = '".$id."' AND `adminid` = '".$userinfo['admindid']."'";
-		
-		$result = $db->query_first($sql);
-		if ($result == null) {
-			// no rights to see the requested ticket
-			standard_error(array('ticketnotaccessible'));
+
+	// only check if this is not a category-id
+	if (!isset($_GET['page']) || (isset($_GET['page']) && $_GET['page'] != 'categories')) {
+		if (!$userinfo['customers_see_all']) {
+			/*
+			 * Check if the current user is allowed to see the current ticket.
+			 */
+			$sql = "SELECT `id` FROM `panel_tickets` WHERE `id` = '".$id."' AND `adminid` = '".$userinfo['admindid']."'";
+
+			$result = $db->query_first($sql);
+			if ($result == null) {
+				// no rights to see the requested ticket
+				standard_error(array('ticketnotaccessible'));
+			}
 		}
 	}
 }
@@ -216,12 +219,16 @@ if($page == 'tickets'
 			else
 			{
 				$categories = '';
-				$result = $db->query_first('SELECT `id`, `name` FROM `' . TABLE_PANEL_TICKET_CATS . '` WHERE `adminid` = "' . $userinfo['adminid'] . '" ORDER BY `logicalorder`, `name` ASC');
+				$where = '';
+				if ($userinfo['tickets_see_all'] != '1') {
+					$where = 'WHERE `adminid` = "' . $userinfo['adminid'] . '"';
+				}
+				$result = $db->query_first('SELECT `id`, `name` FROM `' . TABLE_PANEL_TICKET_CATS . '` '.$where.' ORDER BY `logicalorder`, `name` ASC');
 
 				if(isset($result['name'])
 				   && $result['name'] != '')
 				{
-					$result2 = $db->query('SELECT `id`, `name` FROM `' . TABLE_PANEL_TICKET_CATS . '` WHERE `adminid` = "' . $userinfo['adminid'] . '" ORDER BY `logicalorder`, `name` ASC');
+					$result2 = $db->query('SELECT `id`, `name` FROM `' . TABLE_PANEL_TICKET_CATS . '` '.$where.' ORDER BY `logicalorder`, `name` ASC');
 
 					while($row = $db->fetch_array($result2))
 					{
@@ -454,11 +461,16 @@ elseif($page == 'categories'
 			'name' => $lng['ticket']['category'],
 			'logicalorder' => $lng['ticket']['logicalorder']
 		);
+
+		$where = '1'; // WHERE 1 is like no 'where-clause'
+		if ($userinfo['tickets_see_all'] != '1') {
+			$where = " `main`.`adminid` = '" . (int)$userinfo['adminid'] . "'";
+		}
 		$paging = new paging($userinfo, $db, TABLE_PANEL_TICKET_CATS, $fields, $settings['panel']['paging'], $settings['panel']['natsorting']);
 		$result = $db->query("SELECT `main`.`id`, `main`.`name`, `main`.`logicalorder`, (
                               SELECT COUNT(`sub`.`id`) FROM `" . TABLE_PANEL_TICKETS . "` `sub`
                               WHERE `sub`.`category` = `main`.`id`
-                              AND `sub`.`answerto` = '0' AND `sub`.`adminid` = '" . $userinfo['adminid'] . "')
+                              AND `sub`.`answerto` = '0'  AND `sub`.`adminid` = '" . $userinfo['adminid'] . "')
                               as `ticketcount`, (
                               SELECT COUNT(`sub2`.`id`) FROM `" . TABLE_PANEL_TICKETS . "` `sub2`
                               WHERE `sub2`.`category` = `main`.`id`
@@ -466,7 +478,7 @@ elseif($page == 'categories'
                               AND (`sub2`.`status` = '0' OR `sub2`.`status` = '1' OR `sub2`.`status` = '2')
                               AND `sub2`.`adminid` = '" . $userinfo['adminid'] . "'
                               ) as `ticketcountnotclosed`
-                              FROM `" . TABLE_PANEL_TICKET_CATS . "` `main` WHERE `main`.`adminid` = '" . (int)$userinfo['adminid'] . "' " . $paging->getSqlWhere(true) . " " . $paging->getSqlOrderBy() . " " . $paging->getSqlLimit());
+                              FROM `" . TABLE_PANEL_TICKET_CATS . "` `main` WHERE " . $where . $paging->getSqlWhere(true) . " " . $paging->getSqlOrderBy() . " " . $paging->getSqlLimit());
 		$paging->setEntries($db->num_rows($result));
 		$sortcode = $paging->getHtmlSortCode($lng);
 		$arrowcode = $paging->getHtmlArrowCode($filename . '?page=' . $page . '&s=' . $s);
@@ -503,7 +515,7 @@ elseif($page == 'categories'
 			if($order < 1 || $order >= 1000)
 			{
 				// use the latest available
-				$order = ticket::getHighestOrderNumber($db) + 1;
+				$order = ticket::getHighestOrderNumber($db, $userinfo['adminid']) + 1;
 			}
 
 			if($category == '')
@@ -519,7 +531,7 @@ elseif($page == 'categories'
 		}
 		else
 		{
-			$order = ticket::getHighestOrderNumber($db) + 1;
+			$order = ticket::getHighestOrderNumber($db, $userinfo['adminid']) + 1;
 
 			$category_new_data = include_once dirname(__FILE__).'/lib/formfields/admin/tickets/formfield.category_new.php';
 			$category_new_form = htmlform::genHTMLForm($category_new_data);
@@ -861,6 +873,6 @@ elseif($page == 'archive'
 			ask_yesno('ticket_reallydelete', $filename, array('id' => $id, 'page' => $page, 'action' => $action), $mainticket->Get('subject'));
 		}
 	}
+} else {
+	standard_error('nocustomerforticket');
 }
-
-?>

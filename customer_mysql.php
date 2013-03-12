@@ -102,11 +102,17 @@ elseif($page == 'mysqls')
 				// Begin root-session
 
 				$db_root = new db($sql_root[$result['dbserver']]['host'], $sql_root[$result['dbserver']]['user'], $sql_root[$result['dbserver']]['password'], '');
-				foreach(array_map('trim', array_unique(explode(',', $settings['system']['mysql_access_host']))) as $mysql_access_host)
+				$log->logAction(USR_ACTION, LOG_INFO, "deleted database '" . $result['databasename'] . "'");
+				if(mysql_get_server_info() < '5.0.2') { 
+					// Revoke privileges (only required for MySQL 4.1.2 - 5.0.1)
+					$db_root->query('REVOKE ALL PRIVILEGES, GRANT OPTION FROM \'' . $db_root->escape($result['databasename']) .'\'',false,true);
+				}
+
+				$host_res = $db_root->query("SELECT `Host` FROM `mysql`.`user` WHERE `User`='" . $db_root->escape($result['databasename']) . "'");
+				while($host = $db_root->fetch_array($host_res)) 
 				{
-					$db_root->query('REVOKE ALL PRIVILEGES ON * . * FROM `' . $db_root->escape($result['databasename']) . '`@`' . $db_root->escape($mysql_access_host) . '`');
-					$db_root->query('REVOKE ALL PRIVILEGES ON `' . str_replace('_', '\_', $db_root->escape($result['databasename'])) . '` . * FROM `' . $db_root->escape($result['databasename']) . '`@`' . $db_root->escape($mysql_access_host) . '`');
-					$db_root->query('DELETE FROM `mysql`.`user` WHERE `User` = "' . $db_root->escape($result['databasename']) . '" AND `Host` = "' . $db_root->escape($mysql_access_host) . '"');
+					// as of MySQL 5.0.2 this also revokes privileges. (requires MySQL 4.1.2+)
+					$db_root->query('DROP USER \'' . $db_root->escape($result['databasename']). '\'@\'' . $db_root->escape($host['Host']) . '\'', false, true);
 				}
 
 				$db_root->query('DROP DATABASE IF EXISTS `' . $db_root->escape($result['databasename']) . '`');
@@ -177,9 +183,11 @@ elseif($page == 'mysqls')
 					{
 						$dbserver = 0;
 					}
+					
+					// validate description before actual adding the database, #1052
+					$databasedescription = validate(trim($_POST['description']), 'description');
 
 					// Begin root-session
-
 					$db_root = new db($sql_root[$dbserver]['host'], $sql_root[$dbserver]['user'], $sql_root[$dbserver]['password'], '');
 					$db_root->query('CREATE DATABASE `' . $db_root->escape($username) . '`');
 					$log->logAction(USR_ACTION, LOG_INFO, "created database '" . $username . "'");
@@ -195,8 +203,6 @@ elseif($page == 'mysqls')
 
 					// End root-session
 					// Statement modifyed for Database description -- PH 2004-11-29
-
-					$databasedescription = validate($_POST['description'], 'description');
 					$result = $db->query('INSERT INTO `' . TABLE_PANEL_DATABASES . '` (`customerid`, `databasename`, `description`, `dbserver`) VALUES ("' . (int)$userinfo['customerid'] . '", "' . $db->escape($username) . '", "' . $db->escape($databasedescription) . '", "' . $db->escape($dbserver) . '")');
 					$result = $db->query('UPDATE `' . TABLE_PANEL_CUSTOMERS . '` SET `mysqls_used`=`mysqls_used`+1, `mysql_lastaccountnumber`=`mysql_lastaccountnumber`+1 WHERE `customerid`="' . (int)$userinfo['customerid'] . '"');
 
@@ -308,7 +314,6 @@ elseif($page == 'mysqls')
 				}
 
 				// Update the Database description -- PH 2004-11-29
-
 				$log->logAction(USR_ACTION, LOG_INFO, "edited database '" . $result['databasename'] . "'");
 				$databasedescription = validate($_POST['description'], 'description');
 				$result = $db->query('UPDATE `' . TABLE_PANEL_DATABASES . '` SET `description`="' . $db->escape($databasedescription) . '" WHERE `customerid`="' . (int)$userinfo['customerid'] . '" AND `id`="' . (int)$id . '"');

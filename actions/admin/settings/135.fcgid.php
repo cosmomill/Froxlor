@@ -30,7 +30,7 @@ return array(
 					'save_method' => 'storeSettingField',
 					'plausibility_check_method' => 'checkFcgidPhpFpm',
 					'overview_option' => true
-					),					
+					),
 				'system_mod_fcgid_configdir' => array(
 					'label' => $lng['serversettings']['mod_fcgid']['configdir'],
 					'settinggroup' => 'system',

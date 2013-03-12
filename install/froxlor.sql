@@ -1,4 +1,3 @@
-DROP TABLE IF EXISTS `ftp_groups`;
 CREATE TABLE `ftp_groups` (
   `id` int(20) NOT NULL auto_increment,
   `groupname` varchar(60) NOT NULL default '',
@@ -111,6 +110,7 @@ CREATE TABLE `panel_admins` (
   `ftps_used` int(15) NOT NULL default '0',
   `tickets` int(15) NOT NULL default '-1',
   `tickets_used` int(15) NOT NULL default '0',
+  `tickets_see_all` tinyint(1) NOT NULL default '0',
   `subdomains` int(15) NOT NULL default '0',
   `subdomains_used` int(15) NOT NULL default '0',
   `traffic` bigint(30) NOT NULL default '0',
@@ -418,6 +418,7 @@ INSERT INTO `panel_settings` (`settinggroup`, `varname`, `value`) VALUES
 	('phpfpm', 'vhost_httpgroup', 'froxlorlocal'),
 	('phpfpm', 'idle_timeout', '30'),
 	('phpfpm', 'aliasconfigdir', '/var/www/php-fpm/'),
+	('nginx', 'fastcgiparams', '/etc/nginx/fastcgi_params'),
 	('system', 'lastaccountnumber', '0'),
 	('system', 'lastguid', '9999'),
 	('system', 'documentroot_prefix', '/var/customers/webs/'),
@@ -467,8 +468,8 @@ INSERT INTO `panel_settings` (`settinggroup`, `varname`, `value`) VALUES
 	('system', 'mod_fcgid_peardir', '/usr/share/php/:/usr/share/php5/'),
 	('system', 'index_file_extension', 'html'),
 	('system', 'mod_fcgid_maxrequests', '250'),
-	('system','ssl_key_file','/etc/apache2/apache2.key'),
-	('system','ssl_ca_file', ''),
+	('system', 'ssl_key_file','/etc/apache2/apache2.key'),
+	('system', 'ssl_ca_file', ''),
 	('system', 'debug_cron', '0'),
 	('system', 'store_index_file_subs', '1'),
 	('system', 'stdsubdomain', ''),
@@ -513,6 +514,7 @@ INSERT INTO `panel_settings` (`settinggroup`, `varname`, `value`) VALUES
 	('system', 'nginx_php_backend', '127.0.0.1:8888'),
 	('system', 'perl_server', 'unix:/var/run/nginx/cgiwrap-dispatch.sock'),
 	('system', 'phpreload_command', ''),
+	('system', 'apache24', '0'),
 	('panel', 'decimal_places', '4'),
 	('panel', 'adminmail', 'admin@SERVERNAME'),
 	('panel', 'phpmyadmin_url', ''),
@@ -535,7 +537,9 @@ INSERT INTO `panel_settings` (`settinggroup`, `varname`, `value`) VALUES
 	('panel', 'allow_preset', '1'),
 	('panel', 'allow_preset_admin', '0'),
 	('panel', 'password_regex', ''),
-	('panel', 'version', '0.9.28-svn5');
+	('panel', 'use_webfonts', '0'),
+	('panel', 'webfont', 'Numans'),
+	('panel', 'version', '0.9.28-rc1');
 
 
 
@@ -829,7 +833,7 @@ INSERT INTO `cronjobs_run` (`id`, `module`, `cronfile`, `interval`, `isactive`, 
 	(6, 'froxlor/ticket', 'cron_used_tickets_reset.php', '1 DAY', '1', 'cron_ticketsreset'),
 	(7, 'froxlor/ticket', 'cron_ticketarchive.php', '1 MONTH', '1', 'cron_ticketarchive'),
 	(8, 'froxlor/reports', 'cron_usage_report.php', '1 DAY', '1', 'cron_usage_report'),
-	(9, 'froxlor/backup', 'cron_backup.php', '1 Day', '1', 'cron_backup');
+	(9, 'froxlor/backup', 'cron_backup.php', '1 DAY', '1', 'cron_backup');
 
 
 

@@ -1958,14 +1958,14 @@ if(isFroxlorVersion('0.9.28-svn3'))
 
 	showUpdateStep('Altering Froxlor database and tables to use UTF-8. This may take a while..', true);
 
-	$db->query('ALTER DATABASE ' . $db->getDbName() . ' CHARACTER SET utf8 COLLATE utf8_general_ci');
+	$db->query('ALTER DATABASE `' . $db->getDbName() . '` CHARACTER SET utf8 COLLATE utf8_general_ci');
 
 	$handle = $db->query('SHOW TABLES');
 	while ($row = $db->fetch_array($handle))
 	{
 		foreach ($row as $table)
 		{
-			$db->query('ALTER TABLE ' . $table . ' CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;');
+			$db->query('ALTER TABLE `' . $table . '` CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;');
 		}
 	}
 
@@ -1983,4 +1983,44 @@ if(isFroxlorVersion('0.9.28-svn4')) {
 	lastStepStatus(0);
 
 	updateToVersion('0.9.28-svn5');
+}
+
+if(isFroxlorVersion('0.9.28-svn5')) {
+	showUpdateStep("Updating from 0.9.28-svn5 to 0.9.28-svn6", true);
+	lastStepStatus(0);
+
+	$update_system_apache24 = isset($_POST['update_system_apache24']) ? (int)$_POST['update_system_apache24'] : '0';
+	showUpdateStep('Setting value for apache-2.4 modification', true);
+	// support for Apache-2.4
+	$db->query("INSERT INTO `panel_settings` (`settinggroup`, `varname`, `value`) VALUES ('system', 'apache24', '".$update_system_apache24."');");
+	lastStepStatus(0);
+
+	showUpdateStep("Inserting new tickets-see-all field to panel_admins", true);
+	$db->query("ALTER TABLE `panel_admins` ADD `tickets_see_all` tinyint(1) NOT NULL default '0' AFTER `tickets_used`");
+	lastStepStatus(0);
+
+	showUpdateStep("Updating main admin entry", true);
+	$db->query("UPDATE `panel_admins` SET `tickets_see_all` = '1' WHERE `adminid` = '".$userinfo['adminid']."';");
+	lastStepStatus(0);
+
+	showUpdateStep("Inserting new panel webfont-settings (default: off)", true);
+	$db->query("INSERT INTO `panel_settings` (`settinggroup`, `varname`, `value`) VALUES ('panel', 'use_webfonts', '0');");
+	$db->query("INSERT INTO `panel_settings` (`settinggroup`, `varname`, `value`) VALUES ('panel', 'webfont', 'Numans');");
+	lastStepStatus(0);
+
+	showUpdateStep("Inserting settings for nginx fastcgi-params file", true);
+	$fastcgiparams = '/etc/nginx/fastcgi_params';
+	if (isset($_POST['nginx_fastcgi_params']) && $_POST['nginx_fastcgi_params'] != '') {
+		$fastcgiparams = makeCorrectDir($_POST['nginx_fastcgi_params']);
+	}
+	$db->query("INSERT INTO `panel_settings` (`settinggroup`, `varname`, `value`) VALUES ('nginx', 'fastcgiparams', '".$db->escape($fastcgiparams)."')");
+	lastStepStatus(0);
+
+	updateToVersion('0.9.28-svn6');
+}
+
+if (isFroxlorVersion('0.9.28-svn6')) {
+	showUpdateStep("Updating from 0.9.28-svn6 to 0.9.28 release candidate 1");
+	lastStepStatus(0);
+	updateToVersion('0.9.28-rc1');
 }

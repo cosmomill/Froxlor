@@ -255,7 +255,7 @@ class lighttpd
 				$this->lighttpd_data[$vhost_filename] = '';
 			}
 
-			$this->lighttpd_data[$vhost_filename] = 'server.error-handler-404 = "'.$this->settings['defaultwebsrverrhandler']['err404'].'"';
+			$this->lighttpd_data[$vhost_filename] = 'server.error-handler-404 = "'.makeCorrectFile($this->settings['defaultwebsrverrhandler']['err404']).'"';
 		}
 	}
 
@@ -720,7 +720,7 @@ class lighttpd
 				}
 			}
 
-			$diroption_text.= '"' . $row_htpasswds['path'] . '" =>' . "\n";
+			$diroption_text.= '"' . makeCorrectDir($row_htpasswds['path']) . '" =>' . "\n";
 			$diroption_text.= '(' . "\n";
 			$diroption_text.= '   "method"  => "basic",' . "\n";
 			$diroption_text.= '   "realm"   => "'.$row_htpasswds['authname'].'",' . "\n";
@@ -829,7 +829,7 @@ class lighttpd
 		&& $this->settings['system']['deactivateddocroot'] != '')
 		{
 			$webroot_text.= '  # Using docroot for deactivated users...' . "\n";
-			$webroot_text.= '  server.document-root = "' . $this->settings['system']['deactivateddocroot'] . "\"\n";
+			$webroot_text.= '  server.document-root = "' . makeCorrectDir($this->settings['system']['deactivateddocroot']) . "\"\n";
 			$this->_deactivated = true;
 		}
 		else
@@ -996,10 +996,10 @@ class lighttpd
 			{
 				if(!is_dir($this->settings['system']['apacheconf_htpasswddir']))
 				{
-					mkdir($this->settings['system']['apacheconf_htpasswddir']);
+					mkdir(makeCorrectDir($this->settings['system']['apacheconf_htpasswddir']));
 				}
 
-				$filename = $this->settings['system']['apacheconf_htpasswddir'] . '/' . $key;
+				$filename = makeCorrectFile($this->settings['system']['apacheconf_htpasswddir'] . '/' . $key);
 				$htpasswd_handler = fopen($filename, 'w');
 				fwrite($htpasswd_handler, $data);
 				fclose($htpasswd_handler);
@@ -1028,37 +1028,6 @@ class lighttpd
 					$this->logger->logAction(CRON_ACTION, LOG_NOTICE, 'unlinking ' . $vhost_filename);
 					unlink(makeCorrectFile($this->settings['system']['apacheconf_vhost'] . '/' . $vhost_filename));
 				}
-			}
-		}
-		if($this->settings['phpfpm']['enabled'] == '1')
-		{
-			foreach($this->known_vhostfilenames as $vhostfilename){
-				$known_phpfpm_files[]=preg_replace('/^(05|10|20|21|22|30|50|51)_(froxlor|syscp)_(dirfix|ipandport|normal_vhost|wildcard_vhost|ssl_vhost)_/', '', $vhostfilename);
-			}
-		
-			$configdir = $this->settings['phpfpm']['configdir'];
-			$phpfpm_file_dirhandle = opendir($this->settings['phpfpm']['configdir']);
-
-			if ($phpfpm_file_dirhandle !== false) {
-
-				while (false !== ($phpfpm_filename = readdir($phpfpm_file_dirhandle))) {
-
-					if (is_array($known_phpfpm_files)
-						&& $phpfpm_filename != '.'
-						&& $phpfpm_filename != '..'
-						&& !in_array($phpfpm_filename, $known_phpfpm_files)
-						&& file_exists(makeCorrectFile($this->settings['phpfpm']['configdir'] . '/' . $phpfpm_filename))
-					) {
-						fwrite($this->debugHandler, '  lighttpd::wipeOutOldConfigs: unlinking PHP5-FPM ' . $phpfpm_filename . "\n");
-						$this->logger->logAction(CRON_ACTION, LOG_NOTICE, 'unlinking ' . $phpfpm_filename);
-						unlink(makeCorrectFile($this->settings['phpfpm']['configdir'] . '/' . $phpfpm_filename));
-					}
-					if (!is_array($known_phpfpm_files)) {
-						$this->logger->logAction(CRON_ACTION, LOG_WARNING, "WARNING!! PHP-FPM Configs Not written!!");
-					}
-				}
-			} else {
-				$this->logger->logAction(CRON_ACTION, LOG_WARNING, "WARNING!! PHP-FPM configuration path could not be read (".$this->settings['phpfpm']['configdir'].")");
 			}
 		}
 	}
