@@ -267,7 +267,9 @@ class apache24
 					);
 
 					$php = new phpinterface($this->getDB(), $this->settings, $domain);
-					$this->virtualhosts_data[$vhosts_filename].= '  ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://socket=' . urlencode($php->getInterface()->getSocketFile()) . $mypath . '$1' . "\n";
+					$this->virtualhosts_data[$vhosts_filename].= '  <FilesMatch "\.php$">' . "\n";
+					$this->virtualhosts_data[$vhosts_filename].= '    SetHandler "proxy:unix:' . $php->getInterface()->getSocketFile() . '|fcgi://localhost"' . "\n";
+					$this->virtualhosts_data[$vhosts_filename].= '  </FilesMatch>' . "\n";
 					$this->virtualhosts_data[$vhosts_filename].= '  <Directory "' . $mypath . '">' . "\n";
 					$this->virtualhosts_data[$vhosts_filename].= '    Require all granted' . "\n";
 					$this->virtualhosts_data[$vhosts_filename].= '  </Directory>' . "\n";

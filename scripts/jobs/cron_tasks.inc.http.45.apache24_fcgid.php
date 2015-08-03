@@ -37,7 +37,9 @@ class apache24_fcgid extends apache24
 
 			if((int)$this->settings['phpfpm']['enabled'] == 1)
 			{
-				$php_options_text.= '  ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://socket=' . urlencode($php->getInterface()->getSocketFile()) . makeCorrectDir($domain['documentroot']) . '$1' . "\n";
+				$php_options_text.= '  <FilesMatch "\.php$">' . "\n";
+				$php_options_text.= '    SetHandler "proxy:unix:' . $php->getInterface()->getSocketFile() . '|fcgi://localhost"' . "\n";
+				$php_options_text.= '  </FilesMatch>' . "\n";
 				$php_options_text.= '  <Directory "' . makeCorrectDir($domain['documentroot']) . '">' . "\n";
 				$php_options_text.= '    Require all granted' . "\n";
 				$php_options_text.= '  </Directory>' . "\n";
@@ -72,7 +74,6 @@ class apache24_fcgid extends apache24
 			$php->getInterface()->createConfig($phpconfig);
 			
 			// create php.ini 
-			// @TODO make php-fpm support this
 			$php->getInterface()->createIniFile($phpconfig);
 		}
 		else
@@ -131,7 +132,6 @@ class apache24_fcgid extends apache24
 			$php->getInterface()->createConfig($phpconfig);
 			
 			// create php.ini 
-			// @TODO make php-fpm support this
 			$php->getInterface()->createIniFile($phpconfig);
 		}
 	}
