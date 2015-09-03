@@ -54,7 +54,7 @@ CREATE TABLE `mail_users` (
   `pop3` tinyint(1) NOT NULL default '1',
   `imap` tinyint(1) NOT NULL default '1',
   `description` varchar(255) NOT NULL,
-  `used_by` TEXT NOT NULL,
+  `used_by` TEXT,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=MyISAM CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -66,7 +66,7 @@ CREATE TABLE `mail_virtual` (
   `id` int(11) NOT NULL auto_increment,
   `email` varchar(255) NOT NULL default '',
   `email_full` varchar(255) NOT NULL default '',
-  `destination` text NOT NULL,
+  `destination` text,
   `domainid` int(11) NOT NULL default '0',
   `customerid` int(11) NOT NULL default '0',
   `popaccountid` int(11) NOT NULL default '0',
@@ -229,9 +229,9 @@ CREATE TABLE `panel_domains` (
   `caneditdomain` tinyint(1) NOT NULL default '1',
   `zonefile` varchar(255) NOT NULL default '',
   `dkim` tinyint(1) NOT NULL default '0',
-  `dkim_id` int(11) unsigned NOT NULL,
-  `dkim_privkey` text NOT NULL,
-  `dkim_pubkey` text NOT NULL,
+  `dkim_id` int(11) unsigned NOT NULL default '0',
+  `dkim_privkey` text,
+  `dkim_pubkey` text,
   `wwwserveralias` tinyint(1) NOT NULL default '1',
   `parentdomainid` int(11) unsigned NOT NULL default '0',
   `openbasedir` tinyint(1) NOT NULL default '0',
@@ -245,7 +245,7 @@ CREATE TABLE `panel_domains` (
   `deactivated` tinyint(1) NOT NULL default '0',
   `bindserial` varchar(10) NOT NULL default '2000010100',
   `add_date` int( 11 ) NOT NULL default '0',
-  `registration_date` date NOT NULL,
+  `registration_date` date NOT NULL default '0000-00-00',
   `phpsettingid` INT( 11 ) UNSIGNED NOT NULL DEFAULT '1',
   `mod_fcgid_starter` int(4) default '-1',
   `mod_fcgid_maxrequests` int(4) default '-1',
@@ -267,13 +267,13 @@ CREATE TABLE `panel_ipsandports` (
   `namevirtualhost_statement` tinyint(1) NOT NULL default '0',
   `vhostcontainer` tinyint(1) NOT NULL default '0',
   `vhostcontainer_servername_statement` tinyint(1) NOT NULL default '0',
-  `specialsettings` text NOT NULL,
+  `specialsettings` text,
   `ssl` tinyint(4) NOT NULL default '0',
-  `ssl_cert_file` varchar(255) NOT NULL,
-  `ssl_key_file` varchar(255) NOT NULL,
-  `ssl_ca_file` varchar(255) NOT NULL,
-  `default_vhostconf_domain` text NOT NULL,
-  `ssl_cert_chainfile` varchar(255) NOT NULL,
+  `ssl_cert_file` varchar(255) NOT NULL default '',
+  `ssl_key_file` varchar(255) NOT NULL default '',
+  `ssl_ca_file` varchar(255) NOT NULL default '',
+  `default_vhostconf_domain` text,
+  `ssl_cert_chainfile` varchar(255) NOT NULL default '',
   `docroot` varchar(255) NOT NULL default '',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -527,7 +527,7 @@ INSERT INTO `panel_settings` (`settinggroup`, `varname`, `value`) VALUES
 	('panel', 'allow_domain_change_admin', '0'),
 	('panel', 'allow_domain_change_customer', '0'),
 	('panel', 'frontend', 'froxlor'),
-	('panel', 'default_theme', 'Classic'),
+	('panel', 'default_theme', 'Froxlor'),
 	('panel', 'password_min_length', '0'),
 	('panel', 'adminmail_defname', 'Froxlor Administrator'),
 	('panel', 'adminmail_return', ''),
@@ -543,7 +543,7 @@ DROP TABLE IF EXISTS `panel_tasks`;
 CREATE TABLE `panel_tasks` (
   `id` int(11) unsigned NOT NULL auto_increment,
   `type` int(11) NOT NULL default '0',
-  `data` text NOT NULL,
+  `data` text,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -647,7 +647,7 @@ CREATE TABLE `panel_languages` (
 INSERT INTO `panel_languages` (`id`, `language`, `iso`, `file`) VALUES
     (1, 'Deutsch', 'de', 'lng/german.lng.php'),
     (2, 'English', 'en', 'lng/english.lng.php'),
-    (3, 'Français', 'fr', 'lng/french.lng.php'),
+    (3, 'Fran&ccedil;ais', 'fr', 'lng/french.lng.php'),
     (4, 'Chinese', 'zh', 'lng/zh-cn.lng.php'),
     (5, 'Catalan', 'ca', 'lng/catalan.lng.php'),
     (6, 'Espa&ntilde;ol', 'es', 'lng/spanish.lng.php'),
